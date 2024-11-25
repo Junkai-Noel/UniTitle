@@ -1,13 +1,15 @@
 package com.security;
 
 
-import com.userManage.MyUserDetailsService;
+import com.security.userManage.MyUserDetailsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 
 
@@ -22,10 +24,9 @@ public class WebSecurityConfig {
     private final PasswordUtil passwordUtil;
 
     @Autowired
-    public WebSecurityConfig(PasswordUtil passwordUtil) {
+    public WebSecurityConfig(PasswordUtil passwordUtil, MyUserDetailsService myUserDetailsService) {
         this.passwordUtil = passwordUtil;
     }
-
 
     /**
      *该方法是 Spring Security 中的安全过滤器链 (SecurityFilterChain) 的配置，用于定义应用的访问控制规则：
@@ -44,8 +45,7 @@ public class WebSecurityConfig {
                 .anyRequest()
                 .authenticated());
         http.csrf(
-                csrf -> csrf
-                        .ignoringRequestMatchers("/**")
+                AbstractHttpConfigurer::disable
         );
         return http.build();
     }

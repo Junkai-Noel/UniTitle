@@ -29,6 +29,14 @@ public class Result<T> {
         this.data = builder.data;
     }
 
+    /**
+     * 将枚举值比较操作封装到方法中，避免在其他类繁琐地从封装对象中getMassage然后比对字符串
+     * @param resultCodeEnum ResultCodeEnum
+     * @return boolean
+     */
+    public boolean matches(@NotNull ResultCodeEnum resultCodeEnum) {
+        return this.code == resultCodeEnum.getCode();
+    }
 
     /**
      *  两个方法用于构造有data和null data的ok

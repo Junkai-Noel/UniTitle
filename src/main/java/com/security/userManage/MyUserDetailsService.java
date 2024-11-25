@@ -1,4 +1,4 @@
-package com.userManage;
+package com.security.userManage;
 
 import com.entity.User;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -9,8 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -22,21 +24,18 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class MyUserDetailsService implements UserDetailsService{
+public class MyUserDetailsService implements UserDetailsManager, UserDetailsPasswordService {
 
 
     private final UserMapper userMapper;
-    private final UserServiceImpl userServiceImpl;
 
     @Autowired
-    public MyUserDetailsService(UserMapper userMapper,
-                                UserServiceImpl userServiceImpl) {
+    public MyUserDetailsService(UserMapper userMapper) {
         this.userMapper = userMapper;
-        this.userServiceImpl = userServiceImpl;
     }
 
     /**
-     * 通过username从数据库中获取用户信息
+     * 通过username认证用户
      * @param username String
      * @return user org.springframework.security.core.userdetails.User
      * @throws UsernameNotFoundException 用户名不存在
@@ -50,7 +49,40 @@ public class MyUserDetailsService implements UserDetailsService{
             throw new UsernameNotFoundException("未查询到用户："+username);
         }
         Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        return new MyUserDetails(loginUser);
+        return new User.Builder()
+                .username(loginUser.getUsername())
+                .password(loginUser.getUsername())
+                .nickname(loginUser.getNickname())
+                .build();
+    }
 
+    @Override
+    public UserDetails updatePassword(UserDetails user, String newPassword) {
+        return null;
+    }
+
+    @Override
+    public void createUser(UserDetails user) {
+
+    }
+
+    @Override
+    public void updateUser(UserDetails user) {
+
+    }
+
+    @Override
+    public void deleteUser(String username) {
+
+    }
+
+    @Override
+    public void changePassword(String oldPassword, String newPassword) {
+
+    }
+
+    @Override
+    public boolean userExists(String username) {
+        return false;
     }
 }
