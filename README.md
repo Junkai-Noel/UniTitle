@@ -42,3 +42,6 @@
 ## 2.0更新说明
 1、重构Result结果类，以生成器模式实现  
 2、强化日志输出类LogOut实现方式，改为实现自接口，并增加Controller层日志输出
+### 2.1更新说明
+1、实现了部分Spring Security 的authentication
+2、重构User entity类，使其能够整合进Spring Security
