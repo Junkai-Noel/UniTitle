@@ -11,7 +11,7 @@
 
     <groupId>org.example</groupId>
     <artifactId>UniTitle</artifactId>
-    <version>2.0</version>
+    <version>2.1</version>
 
     <properties>
         <maven.compiler.source>23</maven.compiler.source>
