@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.HeadlineMapper">
+
+    <select id="selectPageMap" resultType="com.pageUtils.PageData">
+        select hid,title,type,page_views pageViews,TIMESTAMPDIFF(HOUR,create_time,NOW()) pastHours,
+        publisher
+        from news_headline
+        where is_deleted=0
+        <if test="pageParam.keyWords !=null and pageParam.keyWords.length()>0 ">
+            and title like concat('%',#{pageParam.keyWords},'%')
+        </if>
+        <if test="pageParam.type != null and pageParam.type != 0">
+        and type = #{pageParam.type}
+        </if>
+    </select>
+    <select id="selectDetailHandledHeadline" resultType="com.entity.HandledHeadline">
+        SELECT
+            hid,
+            title,
+            article,
+            type,
+            h.version,
+            tname typeName,
+            page_views pageViews,
+            TIMESTAMPDIFF(HOUR,create_time,NOW()) pastHours,
+            publisher,
+            nick_name author
+        FROM
+            news_headline h
+        LEFT JOIN
+            news_type t on h.type = t.tid
+        LEFT JOIN
+            news_user u  on h.publisher = u.uid
+        WHERE hid = #{hId}
+    </select>
+    <select id="selectCertainRec" resultType="java.util.Map">
+        SELECT
+            hid,
+            title,
+            article,
+            type
+        FROM news_headline
+        WHERE hid=#{hId}
+    </select>
+</mapper>

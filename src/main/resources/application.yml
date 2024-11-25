@@ -1,0 +1,10 @@
+spring:
+  profiles:
+    active: persistence
+jwt:
+  token:
+    tokenExpiration: 604800000 #有效期7天
+    tokenSignKey: SHVhbmdKdW5rYWkwMzAyMDZXaXRoSGFydXR5YTk2MTIyNg==
+logging:
+  level:
+    org.springframework.security: debug
