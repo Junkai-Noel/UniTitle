@@ -5,7 +5,7 @@ spring:
       url: jdbc:mysql://localhost:3306/sm_db
       driver-class-name: com.mysql.cj.jdbc.Driver
       username: root
-      password: Flame+1226
+      password: xxxxx
 
 mybatis-plus:
   configuration:
