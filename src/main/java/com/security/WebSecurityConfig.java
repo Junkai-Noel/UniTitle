@@ -1,7 +1,7 @@
 package com.security;
 
 
-import com.security.userManage.MyUserDetailsService;
+import com.security.userManage.MyUserDetailsManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 
 
@@ -24,7 +23,7 @@ public class WebSecurityConfig {
     private final PasswordUtil passwordUtil;
 
     @Autowired
-    public WebSecurityConfig(PasswordUtil passwordUtil, MyUserDetailsService myUserDetailsService) {
+    public WebSecurityConfig(PasswordUtil passwordUtil, MyUserDetailsManager myUserDetailsManager) {
         this.passwordUtil = passwordUtil;
     }
 
@@ -59,7 +58,7 @@ public class WebSecurityConfig {
      * @return auth DaoAuthenticationProvider
      */
     @Bean
-    public DaoAuthenticationProvider authenticationProvider( MyUserDetailsService manager) {
+    public DaoAuthenticationProvider authenticationProvider( MyUserDetailsManager manager) {
         DaoAuthenticationProvider auth = new DaoAuthenticationProvider();
         auth.setUserDetailsService(manager);
         auth.setPasswordEncoder(passwordUtil.getEncoder());

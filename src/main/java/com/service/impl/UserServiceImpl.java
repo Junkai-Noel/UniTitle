@@ -1,12 +1,12 @@
 package com.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.entity.User;
 import com.mapper.UserMapper;
 import com.security.JwtSecurityProperties;
 import com.security.PasswordUtil;
+import com.security.userManage.MyUserDetailsManager;
 import com.service.UserService;
 import com.utils.Result;
 import com.utils.ResultCodeEnum;
@@ -23,15 +23,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final UserMapper userMapper;
     private final PasswordUtil passwordUtil;
     private final JwtSecurityProperties jwtSecurityProperties;
+    private final MyUserDetailsManager myUserDetailsManager;
 
 
     @Autowired
     public UserServiceImpl(UserMapper userMapper,
                            PasswordUtil passwordUtil,
-                           JwtSecurityProperties jwtSecurityProperties) {
+                           JwtSecurityProperties jwtSecurityProperties,
+                           MyUserDetailsManager myUserDetailsManager) {
         this.userMapper = userMapper;
         this.passwordUtil = passwordUtil;
         this.jwtSecurityProperties = jwtSecurityProperties;
+        this.myUserDetailsManager = myUserDetailsManager;
     }
 
     /**
@@ -46,16 +49,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     public Result<?> login(@NotNull User user) {
         //查询账号
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUsername, user.getUsername());
-        User loginUser = userMapper.selectOne(queryWrapper);
+        User loginUser = myUserDetailsManager.findUserByUsername(user.getUsername());
         if (loginUser == null) {
             return new Result.Builder<>()
                     .resultCodeEnum(ResultCodeEnum.USERNAME_ERROR)
                     .build();
         }
-        if (!StringUtils.isEmpty(user.getPassword()) &&
-                passwordUtil.matches(user.getPassword(), loginUser.getPassword())) {
+        if (myUserDetailsManager.isPasswordCorrect(user.getUsername(), loginUser.getPassword())) {
             String token = jwtSecurityProperties.generateToken(loginUser);
             Map<String, Object> data = new HashMap<>();
             data.put("token", token);
@@ -144,8 +144,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .password(passwordUtil.encodePassword(user.getPassword()))
                 .nickname(user.getNickname())
                 .build();
-        int row = userMapper.insert(finalUser);
-        System.out.println(row);
+        myUserDetailsManager.createUser(finalUser);
         return Result.ok();
     }
 
@@ -163,5 +162,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     .build();
         }
         return Result.ok();
+    }
+
+    public Result<?> updateUserPassword(User user) {
+        if (myUserDetailsManager.updatePassword(user, user.getPassword()))
+            return Result.ok();
+        return new Result.Builder<>()
+                .code(999)
+                .msg("UNEXPECTED_ERROR")
+                .data(null)
+                .build();
+    }
+
+    @Override
+    public Result<?> updateUser(User user) {
+        myUserDetailsManager.updateUser(user);
+        return Result.ok();
+    }
+
+    @Override
+    public Result<?> removeUser(@NotNull User user) {
+        myUserDetailsManager.deleteUser(user.getUsername());
+        return Result.ok();
+    }
+
+    @Override
+    public Result<?> changePassword(@NotNull User user) {
+        User DBUser = myUserDetailsManager.findUserByUsername(user.getUsername());
+        if(passwordUtil.matches(user.getPassword(),DBUser.getPassword())) {
+            myUserDetailsManager.changePassword(DBUser.getPassword(),
+                    user.getPassword());
+            return Result.ok();
+        }
+        return new Result.Builder<>()
+                .resultCodeEnum(ResultCodeEnum.PASSWORD_ERROR)
+                .build();
     }
 }

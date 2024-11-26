@@ -1,7 +1,9 @@
 package com;
 
+import com.entity.User;
 import com.security.JwtSecurityProperties;
 import com.security.PasswordUtil;
+import com.service.impl.UserServiceImpl;
 import com.utils.ResultCodeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -24,6 +26,8 @@ class SpringbootTest {
     private JwtSecurityProperties jwtSecurityProperties;
     @Autowired
     private PasswordUtil passwordUtil;
+    @Autowired
+    private UserServiceImpl userServiceImpl;
 
     @Test
     public void tokenTest() {
@@ -53,5 +57,15 @@ class SpringbootTest {
         Instant instant = Instant.ofEpochMilli(Long.parseLong(date));
         LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
         return dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
+
+    @Test
+    public void createTest(){
+        User finalUser = new User.Builder()
+                .username("user.getUsername()")
+                .password("passwordUtil.encodePassword(user.getPassword())")
+                .nickname("user.getNickname()")
+                .build();
+        userServiceImpl.registerUser(finalUser);
     }
 }
