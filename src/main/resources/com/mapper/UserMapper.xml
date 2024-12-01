@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.UserMapper">
+
+    <update id="updatePasswordByUsername">
+        UPDATE news_user SET
+        password=#{password}
+        WHERE
+        username=#{username} AND is_deleted = 0
+    </update>
+
+    <update id="updateByUsername">
+        UPDATE news_user SET
+        nickname=#{nickname}
+        WHERE
+        username=#{username} AND is_deleted = 0
+    </update>
+
+    <delete id="deleteByUsername">
+        update news_user SET
+            is_deleted = 1
+        WHERE username = #{username} AND is_deleted = 0;
+    </delete>
+</mapper>

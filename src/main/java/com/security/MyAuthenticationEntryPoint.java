@@ -1,8 +1,6 @@
 package com.security;
 
 import com.alibaba.fastjson2.JSON;
-import com.utils.Result;
-import com.utils.ResultCodeEnum;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;
