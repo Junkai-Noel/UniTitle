@@ -1,7 +1,9 @@
 package com.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +17,7 @@ import java.util.List;
  * 重构User类，使其实现UserDetails,并使用生成器模式构造参数，以将用户管理功能整合至spring security
  */
 @Getter
+@AllArgsConstructor
 public class User implements Serializable, UserDetails { //定义 'serialVersionUID' 字段的不可序列化类 'User'
     @TableId(value = "uid", type = IdType.AUTO)
     private  Integer uId;
@@ -51,12 +54,12 @@ public class User implements Serializable, UserDetails { //定义 'serialVersion
 
     @Override
     public String getPassword() {
-        return username;
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return password;
+        return username;
     }
 
     @Override
