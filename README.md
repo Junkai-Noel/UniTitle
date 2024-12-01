@@ -45,3 +45,5 @@
 ### 2.1更新说明
 1、实现了部分Spring Security 的authentication  
 2、重构User entity类，使其能够整合进Spring Security
+### 2.3更新说明
+将用户管理与spring security进行进一步整合。由于项目体量小，很多功能没有实现的必要，因此这个项目在更新完OAuth2后会停止更新并完结
