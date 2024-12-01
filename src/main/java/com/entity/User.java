@@ -3,7 +3,6 @@ package com.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,7 +10,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 重构User类，使其实现UserDetails,并使用生成器模式构造参数，以将用户管理功能整合至spring security
@@ -26,8 +27,9 @@ public class User implements Serializable, UserDetails { //定义 'serialVersion
 
     private final String password;
 
-    @TableField("nick_name")
     private final String nickname;
+
+    private final Set<GrantedAuthority> authorities;
 
     @Version
     private Integer version;
@@ -43,10 +45,14 @@ public class User implements Serializable, UserDetails { //定义 'serialVersion
         this.username = builder.username;
         this.password = builder.password;
         this.nickname = builder.nickname;
+        this.authorities = builder.authorities;
     }
 
 
-
+    /**
+     * 默认为所有用户赋予USER权限
+     * @return Collection<? extends GrantedAuthority>
+     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
@@ -89,6 +95,7 @@ public class User implements Serializable, UserDetails { //定义 'serialVersion
         private String username;
         private String password;
         private String nickname;
+        private  Set<GrantedAuthority> authorities;
 
         public Builder username(String username) {
             this.username = username;
@@ -100,6 +107,11 @@ public class User implements Serializable, UserDetails { //定义 'serialVersion
         }
         public Builder nickname(String nickname) {
             this.nickname = nickname;
+            return this;
+        }
+        public Builder authorities(String role) {
+            authorities = new HashSet<>();
+            authorities.add(new SimpleGrantedAuthority(role));
             return this;
         }
        public User build() {

@@ -5,7 +5,7 @@
 <mapper namespace="com.mapper.HeadlineMapper">
 
     <select id="selectPageMap" resultType="com.pageUtils.PageData">
-        select hid,title,type,page_views pageViews,TIMESTAMPDIFF(HOUR,create_time,NOW()) pastHours,
+        select hid,title,type,page_views pageViews, TIMESTAMPDIFF(HOUR,create_time,NOW()) pastHours,
         publisher
         from news_headline
         where is_deleted=0
@@ -27,7 +27,7 @@
             page_views pageViews,
             TIMESTAMPDIFF(HOUR,create_time,NOW()) pastHours,
             publisher,
-            nick_name author
+            nickname author
         FROM
             news_headline h
         LEFT JOIN

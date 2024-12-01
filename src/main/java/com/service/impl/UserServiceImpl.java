@@ -1,19 +1,25 @@
 package com.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.entity.User;
 import com.mapper.UserMapper;
 import com.security.JwtSecurityProperties;
 import com.security.PasswordUtil;
-import com.security.userManage.MyUserDetailsManager;
+import com.security.MyUserDetailsManager;
 import com.service.UserService;
 import com.utils.Result;
 import com.utils.ResultCodeEnum;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,7 +61,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     .resultCodeEnum(ResultCodeEnum.USERNAME_ERROR)
                     .build();
         }
-        if (myUserDetailsManager.isPasswordCorrect(user.getUsername(), loginUser.getPassword())) {
+        if (myUserDetailsManager.isPasswordCorrect(user.getPassword(), loginUser.getPassword())) {
             String token = jwtSecurityProperties.generateToken(loginUser);
             Map<String, Object> data = new HashMap<>();
             data.put("token", token);
@@ -71,13 +77,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * <P>1、检查token是否过期，如果过期，返回用户未登录。未过期，根据token中存放的数据获取userId</P>
      * <p>2、根据获取到的userId查询数据库中的user数据封装到user对象中，将密码设为null，返回到controller</p>
      * <p>3、如数据库中不存在用户，返回未登录</p>
-     *
-     * @param token String
-     * @return result Result<?>
+     * <p>getPrincipal() 返回的是经过身份验证的用户的 主体信息，通常是实现了 UserDetails 接口的一个对象。在大多数情况下，这个对象是你定义的 User 类（它通常实现了 UserDetails 接口）。
+     * UserDetails 接口是 Spring Security 用来封装用户信息的接口，里面包含了用户的基本信息（如用户名、密码、权限等）。因此，getPrincipal() 会返回实现了该接口的对象。</p>
+     * @return result Result
      */
 
-    public Result<?> getUserInfo(String token) {
-        if (jwtSecurityProperties.isTokenExpired(token)) {
+    public Result<?> getUserInfo() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication authentication = context.getAuthentication();
+        /*
+             getName方法为 Principal接口方法，该方法在AbstractAuthenticationToken抽象类中实现。
+             该方法会验证principal的类型，然后调用类型的getName方法获取用户名。源码中可选的类型有：
+             1、UserDetails实现类
+             2、AuthenticatedPrincipal实现类
+             3、Principal实现类
+         */
+        Object principal = authentication.getName();
+        Object credentials = authentication.getCredentials();
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        Map<String, Object> data = new HashMap<>();
+        data.put("username", principal);
+        data.put("password", credentials);
+        data.put("authorities", authorities);
+        return Result.ok(data);
+        /*if (jwtSecurityProperties.isTokenExpired(token)) {
             return new Result.Builder<>()
                     .resultCodeEnum(ResultCodeEnum.NOT_LOGIN)
                     .build();
@@ -98,7 +121,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return new Result.Builder<>()
                 .resultCodeEnum(ResultCodeEnum.USERNAME_ERROR)
-                .build();
+                .build();*/
     }
 
     /**
@@ -165,7 +188,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     public Result<?> updateUserPassword(User user) {
-        if (myUserDetailsManager.updatePassword(user, user.getPassword()))
+        if (myUserDetailsManager.updatePassword(user, user.getPassword()) > 0)
             return Result.ok();
         return new Result.Builder<>()
                 .code(999)
@@ -186,15 +209,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return Result.ok();
     }
 
+    /**
+     * 业务执行前检查参数，检查用户名是否存在、新密码是否为空以及旧密码是否匹配数据库中密码。检查通过则执行业务
+     * @param user User
+     * @param newPassword String
+     * @return result
+     */
     @Override
-    public Result<?> changePassword(@NotNull User user) {
-        User DBUser = myUserDetailsManager.findUserByUsername(user.getUsername());
-        if(passwordUtil.matches(user.getPassword(),DBUser.getPassword())) {
-            myUserDetailsManager.changePassword(DBUser.getPassword(),
-                    user.getPassword());
-            return Result.ok();
+    public Result<?> changePassword(@NotNull User user,String newPassword) {
+        if(StringUtils.isBlank(newPassword)) {
+            return new Result.Builder<>()
+                    .resultCodeEnum(ResultCodeEnum.PASSWORD_NULL)
+                    .build();
         }
-        return new Result.Builder<>()
+        User DBUser = myUserDetailsManager.findUserByUsername(user.getUsername());
+        if(DBUser == null)
+            return new Result.Builder<>()
+                    .resultCodeEnum(ResultCodeEnum.USERNAME_ERROR)
+                    .build();
+        if (myUserDetailsManager.isPasswordCorrect(user.getPassword(), DBUser.getPassword())) {
+            myUserDetailsManager.changePassword(DBUser.getPassword(),
+                    newPassword);
+            return Result.ok();
+        } else return new Result.Builder<>()
                 .resultCodeEnum(ResultCodeEnum.PASSWORD_ERROR)
                 .build();
     }

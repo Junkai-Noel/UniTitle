@@ -11,7 +11,8 @@ public enum ResultCodeEnum {
     PASSWORD_ERROR(503, "passwordError"),
     NOT_LOGIN(504, "notLogin"),
     TOKEN_NOT_FOUND(505, "tokenNotFound"),
-    USERNAME_USED(506, "userNameUsed");
+    USERNAME_USED(506, "userNameUsed"),
+    PASSWORD_NULL(507, "passWordNull");
 
 
     private final Integer code;
