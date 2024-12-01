@@ -33,12 +33,11 @@ public class UserController {
 
     /**
      * 获取user信息
-     * @param token String
      * @return result Result<?>
      */
     @GetMapping("/getUserInfo")
-    public Result<?> getUserInfo(@RequestHeader String token) {
-        return userServiceImpl.getUserInfo(token);
+    public Result<?> getUserInfo() {
+        return userServiceImpl.getUserInfo();
     }
 
     /**
@@ -103,8 +102,16 @@ public class UserController {
         return userServiceImpl.removeUser(user);
     }
 
+
+    /**
+     * 需要传入旧密码和新密码，旧密码匹配后才能修改密码为新密码
+     * 接口涉及SpringSecurity认证功能，暂时无法实现
+     * 2024.12.01更新，该接口已正常使用,不过必须通过集成了spring security的登录页进行用户登录
+     * @param user User
+     * @return result
+     */
     @PutMapping("/change")
-    public Result<?> change(@RequestBody User user) {
-        return userServiceImpl.changePassword(user);
+    public Result<?> change(@RequestBody User user, @RequestParam String newPassword) {
+        return userServiceImpl.changePassword(user,newPassword);
     }
 }

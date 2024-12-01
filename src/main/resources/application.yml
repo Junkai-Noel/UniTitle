@@ -8,3 +8,6 @@ jwt:
 logging:
   level:
     org.springframework.security: debug
+server:
+  servlet:
+    context-path: /main

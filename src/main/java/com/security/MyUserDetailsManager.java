@@ -1,10 +1,9 @@
-package com.security.userManage;
+package com.security;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.entity.User;
 import com.mapper.UserMapper;
-import com.security.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,18 +74,12 @@ public class MyUserDetailsManager implements UserDetailsManager {
      * @param newPassword String
      * @return boolean
      */
-    public boolean updatePassword(@NotNull UserDetails user, String newPassword) {
+    public int updatePassword(@NotNull UserDetails user, String newPassword) {
         User loginUser = (User) user;
         if (userExists(loginUser.getUsername())) {
-            User finalUser = new User.Builder()
-                    .username(loginUser.getUsername())
-                    .password(newPassword)
-                    .nickname(loginUser.getNickname())
-                    .build();
-            userMapper.updateById(finalUser);
-            return true;
+            return userMapper.updatePasswordByUsername(loginUser.getUsername(), newPassword);
         }
-        return false;
+        return 0;
     }
 
     /**
@@ -98,17 +91,23 @@ public class MyUserDetailsManager implements UserDetailsManager {
     public void updateUser(UserDetails user) {
         User loginUser = (User) user;
         User DBUSer = findUserByUsername(loginUser.getUsername());
-        User finalUser = new User.Builder()
-                .username(loginUser.getUsername())
-                .nickname(loginUser.getNickname())
-                .password(DBUSer.getPassword())
-                .build();
-        userMapper.updateById(finalUser);
+        if(DBUSer != null) {
+            User finalUser = new User.Builder()
+                    .username(loginUser.getUsername())
+                    .nickname(loginUser.getNickname())
+                    .password(DBUSer.getPassword())
+                    .build();
+            userMapper.updateByUsername(finalUser);
+        }
+        else throw new UsernameNotFoundException("usernameNotFound");
     }
 
     @Override
     public void deleteUser(String username) {
-        userMapper.deleteById(username);
+        if(userExists(username))
+            userMapper.deleteByUsername(username);
+        else
+            throw new UsernameNotFoundException("usernameNotFound");
     }
 
     /**
@@ -124,15 +123,10 @@ public class MyUserDetailsManager implements UserDetailsManager {
                 .getContext()
                 .getAuthentication()
                 .getName();
-
-        // 使用用户名查询用户
-        User user = findUserByUsername(username);
         // 验证旧密码，更新新密码
-        userMapper.updateById(new User.Builder()
-                .username(username)
-                .password(newPassword)
-                .nickname(user.getNickname())
-                .build());
+        newPassword = passwordUtil.encodePassword(newPassword);
+        if((userMapper.updatePasswordByUsername(username, newPassword))==0)
+            throw new UsernameNotFoundException("usernameNotFound");
     }
 
     /**
@@ -171,5 +165,4 @@ public class MyUserDetailsManager implements UserDetailsManager {
         return (!StringUtils.isEmpty(originalPassword) &&
                 passwordUtil.matches(originalPassword, encodedPassword));
     }
-
 }

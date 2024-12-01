@@ -7,12 +7,12 @@ import org.jetbrains.annotations.NotNull;
 
 public interface UserService extends IService<User> {
     Result<?> login(@NotNull User user);
-    Result<?> getUserInfo(String token);
+    Result<?> getUserInfo();
     Result<?> checkUserName(String userName);
     Result<?> registerUser(@NotNull User user);
     Result<?> checkLogin(String token);
     Result<?> updateUserPassword(User user);
     Result<?> updateUser(User user);
     Result<?> removeUser(User user);
-    Result<?> changePassword(User user);
+    Result<?> changePassword(User user,String newPassword);
 }

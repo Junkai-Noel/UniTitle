@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 @Getter
 @Component
 public class PasswordUtil {
+    //使用BCrypt算法进行密码加密，工作因子默认
     private final PasswordEncoder encoder = new BCryptPasswordEncoder();
 
 
